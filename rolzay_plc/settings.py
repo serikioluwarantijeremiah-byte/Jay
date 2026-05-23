@@ -9,38 +9,22 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-import os
+
+import dj_database_url
+from decouple import config
 from pathlib import Path
 
-from django.conf.global_settings import MEDIA_URL, STATICFILES_DIRS, STATIC_ROOT
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Security
+SECRET_KEY = config('SECRET_KEY')
+DEBUG      = config('DEBUG', default=False, cast=bool)
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-+kf=#$t%nesm18%qap%^r^-s6v08vd6i@&kiywvsdq3smg#wne'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
-from decouple import config
-
-# Celery
-CELERY_BROKER_URL        = config('REDIS_URL', default='redis://localhost:6379/0')
-CELERY_RESULT_BACKEND    = config('REDIS_URL', default='redis://localhost:6379/0')
-CELERY_ACCEPT_CONTENT    = ['json']
-CELERY_TASK_SERIALIZER   = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE          = 'Europe/London'
-
-
-# Application definition
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.onrender.com',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -49,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic',
     'accounts',
     'stores',
     'products',
@@ -62,6 +47,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ← right after security
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -75,7 +61,7 @@ ROOT_URLCONF = 'rolzay_plc.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR.joinpath('templates')],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -89,85 +75,74 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'rolzay_plc.wsgi.application'
 
+# Database — auto switches between local and Render
+DATABASE_URL = config('DATABASE_URL', default=None)
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if DATABASE_URL:
+    # Render PostgreSQL
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+        )
     }
-}
-
-
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
+else:
+    # Local PostgreSQL
+    DATABASES = {
+        'default': {
+            'ENGINE'  : 'django.db.backends.postgresql',
+            'NAME'    : config('DB_NAME'),
+            'USER'    : config('DB_USER'),
+            'PASSWORD': config('DB_PASSWORD'),
+            'HOST'    : config('DB_HOST', default='localhost'),
+            'PORT'    : config('DB_PORT', default='5432'),
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
-USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
+TIME_ZONE     = 'Europe/London'
+USE_I18N      = True
+USE_TZ        = True
 
 # Static files
-STATIC_URL = '/static/'
+STATIC_URL  = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',   # your project-level static folder
+    BASE_DIR / 'static',
 ]
 
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # ← where collectstatic puts files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-LOGIN_URL          = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/'
+# Auth
+LOGIN_URL           = '/accounts/login/'
+LOGIN_REDIRECT_URL  = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-from decouple import config
+# Celery
+CELERY_BROKER_URL        = config('REDIS_URL', default='redis://localhost:6379/0')
+CELERY_RESULT_BACKEND    = config('REDIS_URL', default='redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT    = ['json']
+CELERY_TASK_SERIALIZER   = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE          = 'Europe/London'
 
-# Security
-SECRET_KEY = config('SECRET_KEY')
-DEBUG      = True  #config('DEBUG', default=False, cast=bool)
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-
-# Database — PostgreSQL
-DATABASES = {
-    'default': {
-        'ENGINE'  : 'django.db.backends.postgresql',
-        'NAME'    : config('DB_NAME'),
-        'USER'    : config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST'    : config('DB_HOST', default='localhost'),
-        'PORT'    : config('DB_PORT', default='5432'),
-    }
-}
+# Production security
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER   = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SESSION_COOKIE_SECURE       = True
+    CSRF_COOKIE_SECURE          = True
