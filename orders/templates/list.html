@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #7b2ff7 0%, #2c003e 100%);
+        min-height: 100vh;
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #7b2ff7, #00c6ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-bar {
+        background: rgba(255,255,255,0.08);
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .filter-bar input,
+    .filter-bar select {
+        border-radius: 30px;
+        border: none;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        outline: none;
+    }
+
+    .filter-bar button {
+        border-radius: 30px;
+        background: linear-gradient(135deg, #7b2ff7, #4facfe);
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        font-weight: 600;
+    }
+
+    .order-table {
+        background: rgba(255,255,255,0.97);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+
+    .order-table table {
+        margin: 0;
+    }
+
+    .order-table thead {
+        background: linear-gradient(135deg, #7b2ff7, #4facfe);
+        color: white;
+    }
+
+    .order-table thead th {
+        padding: 14px 16px;
+        font-weight: 600;
+        border: none;
+    }
+
+    .order-table tbody td {
+        padding: 12px 16px;
+        vertical-align: middle;
+        border-color: #f0e6ff;
+    }
+
+    .order-table tbody tr:hover {
+        background: #faf5ff;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .status-pending    { background: #fff3cd; color: #856404; }
+    .status-confirmed  { background: #cff4fc; color: #055160; }
+    .status-processing { background: #e0d0ff; color: #5b21b6; }
+    .status-shipped    { background: #d1ecf1; color: #0c5460; }
+    .status-delivered  { background: #d4edda; color: #155724; }
+    .status-cancelled  { background: #f8d7da; color: #721c24; }
+    .status-refunded   { background: #e2e3e5; color: #383d41; }
+
+    .channel-badge {
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: #f0e6ff;
+        color: #7b2ff7;
+    }
+
+    .btn-view {
+        padding: 5px 14px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #7b2ff7, #4facfe);
+        color: white;
+        text-decoration: none;
+        font-size: 0.82rem;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .btn-view:hover {
+        opacity: 0.85;
+        color: white;
+    }
+
+    .no-orders {
+        text-align: center;
+        color: white;
+        padding: 3rem;
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-4">
+
+    <div class="page-title">Orders</div>
+
+    <!-- Filters -->
+    <form method="GET">
+        <div class="filter-bar">
+            <input type="text" name="q"
+                   placeholder="Search name or email..."
+                   value="{{ query|default:'' }}">
+
+            <select name="status">
+                <option value="">All Statuses</option>
+                {% for val, label in status_choices %}
+                    <option value="{{ val }}" {% if current_status == val %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <select name="channel">
+                <option value="">All Channels</option>
+                {% for val, label in channel_choices %}
+                    <option value="{{ val }}" {% if current_channel == val %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Filter</button>
+        </div>
+    </form>
+
+    <!-- Orders table -->
+    {% if orders %}
+    <div class="order-table">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Customer</th>
+                    <th>Channel</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td><strong>#{{ order.id }}</strong></td>
+                    <td>
+                        <div style="font-weight:600;">{{ order.customer_name }}</div>
+                        <div style="font-size:0.8rem; color:#888;">{{ order.customer_email }}</div>
+                    </td>
+                    <td><span class="channel-badge">{{ order.channel }}</span></td>
+                    <td>{{ order.items.count }}</td>
+                    <td><strong>£{{ order.total }}</strong></td>
+                    <td>
+                        <span class="status-badge status-{{ order.status }}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </td>
+                    <td style="font-size:0.85rem; color:#666;">
+                        {{ order.created_at|date:"d M Y" }}
+                    </td>
+                    <td>
+                        <a href="{% url 'orders:detail' order.pk %}" class="btn-view">
+                            View →
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <div class="no-orders">No orders found.</div>
+    {% endif %}
+
+</div>
+{% endblock %}

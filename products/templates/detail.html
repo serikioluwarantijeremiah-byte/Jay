@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #7b2ff7 0%, #2c003e 100%);
+        min-height: 100vh;
+    }
+
+    .detail-card {
+        background: rgba(255,255,255,0.96);
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow: 0 16px 50px rgba(0,0,0,0.2);
+        margin-top: 2rem;
+    }
+
+    .main-image {
+        width: 100%;
+        border-radius: 16px;
+        object-fit: cover;
+        max-height: 400px;
+    }
+
+    .gallery {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+    }
+
+    .gallery img {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 10px;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: 0.2s;
+    }
+
+    .gallery img:hover {
+        border-color: #7b2ff7;
+    }
+
+    .product-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #1a1a2e;
+    }
+
+    .product-price {
+        font-size: 1.6rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #7b2ff7, #00c6ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 10px 0;
+    }
+
+    .product-description {
+        color: #444;
+        line-height: 1.7;
+        margin-bottom: 1.5rem;
+    }
+
+    .stock-badge {
+        display: inline-block;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .in-stock  { background: #e6f9f0; color: #1a9e5f; }
+    .out-stock { background: #fdecea; color: #d32f2f; }
+
+    .btn-buy {
+        width: 100%;
+        padding: 14px;
+        border-radius: 30px;
+        background: linear-gradient(135deg, #7b2ff7, #4facfe);
+        color: white;
+        border: none;
+        font-size: 1rem;
+        font-weight: 700;
+        transition: 0.3s;
+    }
+
+    .btn-buy:hover {
+        opacity: 0.88;
+        transform: scale(1.02);
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-bottom: 1rem;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .back-link:hover { text-decoration: underline; color: #c9b0ff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-4">
+
+    <a href="{% url 'products:list' %}" class="back-link">← Back to Products</a>
+
+    <div class="detail-card">
+        <div class="row g-4">
+
+            <!-- Images -->
+            <div class="col-md-6">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="main-image" id="mainImg">
+                {% else %}
+                    <img src="{% static 'images/placeholder.png' %}" class="main-image" id="mainImg">
+                {% endif %}
+
+                <!-- Gallery thumbnails -->
+                {% if images %}
+                <div class="gallery">
+                    {% for img in images %}
+                        <img src="{{ img.image.url }}"
+                             alt="{{ img.alt }}"
+                             onclick="document.getElementById('mainImg').src=this.src">
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Info -->
+            <div class="col-md-6">
+                <div class="product-title">{{ product.name }}</div>
+                <div class="product-price">£{{ product.price }}</div>
+
+                {% if product.stock > 0 %}
+                    <span class="stock-badge in-stock">✓ In Stock ({{ product.stock }} left)</span>
+                {% else %}
+                    <span class="stock-badge out-stock">✗ Out of Stock</span>
+                {% endif %}
+
+                <p class="product-description">{{ product.description }}</p>
+
+                <div class="mb-2" style="color:#888; font-size:0.85rem;">
+                    SKU: {{ product.sku }}
+                    {% if product.category %} &nbsp;|&nbsp; {{ product.category.name }}{% endif %}
+                </div>
+
+                {% if product.stock > 0 %}
+                    <button class="btn btn-buy">Add to Cart</button>
+                {% else %}
+                    <button class="btn btn-buy" disabled style="opacity:0.5;">Out of Stock</button>
+                {% endif %}
+                {% if request.user.is_staff %}
+            <div class="mt-3">
+                <a href="{% url 'integrations:manual_sync' product.pk %}"
+                   style="display:inline-block; padding:10px 24px; border-radius:30px;
+                          background:linear-gradient(135deg,#7b2ff7,#4facfe);
+                          color:white; font-weight:700; text-decoration:none;">
+                    ⚡ Sync to All Channels
+                </a>
+            </div>
+{% endif %}
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="py-4" style="text-align:center; color:white;">
+    <h3>Manually Sync "{{ product.name }}"?</h3>
+    <p style="color:rgba(255,255,255,0.6);">
+        This will push the product to all active channels immediately.
+    </p>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success me-2">
+            ⚡ Sync Now
+        </button>
+        <a href="{% url 'products:detail' product.slug %}"
+           class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

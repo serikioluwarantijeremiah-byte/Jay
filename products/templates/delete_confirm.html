@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="py-4" style="color:white; text-align:center;">
+    <h3>Delete "{{ product.name }}"?</h3>
+    <p>This cannot be undone.</p>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger me-2">Yes, Delete</button>
+        <a href="{% url 'products:detail' product.slug %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

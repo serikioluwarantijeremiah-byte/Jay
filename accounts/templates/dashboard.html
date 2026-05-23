@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #7b2ff7 0%, #2c003e 100%);
+        min-height: 100vh;
+    }
+
+    .dash-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #7b2ff7, #00c6ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.3rem;
+    }
+
+    .dash-subtitle {
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 2rem;
+    }
+
+    .dash-card {
+        background: rgba(255, 255, 255, 0.96);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        text-align: center;
+        transition: 0.3s;
+        text-decoration: none;
+        display: block;
+        color: inherit;
+    }
+
+    .dash-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 16px 40px rgba(123, 47, 247, 0.25);
+        color: inherit;
+    }
+
+    .dash-card .icon {
+        font-size: 2.4rem;
+        margin-bottom: 10px;
+    }
+
+    .dash-card .card-label {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1a1a2e;
+    }
+
+    .dash-card .card-desc {
+        font-size: 0.82rem;
+        color: #888;
+        margin-top: 4px;
+    }
+
+    .logout-btn {
+        display: inline-block;
+        margin-top: 2rem;
+        padding: 10px 28px;
+        border-radius: 30px;
+        background: rgba(255, 255, 255, 0.15);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .logout-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-4">
+
+    <div class="dash-title">Dashboard</div>
+    <div class="dash-subtitle">Hello, {{ user.username }} 👋</div>
+
+    <div class="row g-4">
+
+        <div class="col-6 col-md-3">
+            <a href="{% url 'products:list' %}" class="dash-card">
+                <div class="icon">🛍️</div>
+                <div class="card-label">Products</div>
+                <div class="card-desc">View all products</div>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <a href="{% url 'products:add' %}" class="dash-card">
+                <div class="icon">➕</div>
+                <div class="card-label">Add Product</div>
+                <div class="card-desc">List a new item</div>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <a href="{% url 'orders:list' %}" class="dash-card">
+                <div class="icon">📦</div>
+                <div class="card-label">Orders</div>
+                <div class="card-desc">Manage orders</div>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <a href="#" class="dash-card">
+                <div class="icon">📊</div>
+                <div class="card-label">Analytics</div>
+                <div class="card-desc">Sales overview</div>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <a href="{% url 'stores:list' %}" class="dash-card">
+                <div class="icon">🏪</div>
+                <div class="card-label">Channels</div>
+                <div class="card-desc">Manage stores</div>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <a href="{% url 'integrations:events' %}" class="dash-card">
+                <div class="icon">⚡</div>
+                <div class="card-label">Integrations</div>
+                <div class="card-desc">Sync events & logs</div>
+            </a>
+        </div>
+    </div>
+
+    <a href="{% url 'accounts:logout' %}" class="logout-btn">Sign Out →</a>
+
+</div>
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #7b2ff7 0%, #2c003e 100%);
+        min-height: 100vh;
+    }
+
+    .form-card {
+        background: rgba(255,255,255,0.97);
+        border-radius: 24px;
+        padding: 36px;
+        box-shadow: 0 16px 50px rgba(0,0,0,0.2);
+        margin: 2rem auto;
+        max-width: 700px;
+    }
+
+    .form-title {
+        font-size: 1.6rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #7b2ff7, #00c6ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-label {
+        font-weight: 700;
+        color: #7b2ff7;
+        font-size: 0.88rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 1.5rem 0 0.8rem;
+        border-bottom: 2px solid #f0e6ff;
+        padding-bottom: 6px;
+    }
+
+    .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: #f8f4ff;
+        border-radius: 12px;
+        border: 1px solid #e0d0ff;
+        margin-bottom: 10px;
+    }
+
+    .toggle-row label {
+        font-weight: 600;
+        color: #3a3a5c;
+        margin: 0;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        border-radius: 30px;
+        background: linear-gradient(135deg, #7b2ff7, #4facfe);
+        color: white;
+        border: none;
+        font-size: 1rem;
+        font-weight: 700;
+        margin-top: 1.5rem;
+        transition: 0.3s;
+    }
+
+    .btn-submit:hover { opacity: 0.88; }
+
+    .back-link {
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+
+    .back-link:hover { color: #c9b0ff; }
+
+    .credential-note {
+        font-size: 0.78rem;
+        color: #aaa;
+        margin-top: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-4">
+
+    <a href="{% url 'stores:list' %}" class="back-link">← Back to Channels</a>
+
+    <div class="form-card">
+        <div class="form-title">{{ title }}</div>
+
+        {% if messages %}
+            {% for msg in messages %}
+                <div class="alert alert-danger alert-dismissible fade show">
+                    {{ msg }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Basic -->
+            <div class="section-label">Channel Info</div>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label fw-600">Store Name</label>
+                    {{ form.name }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-600">Channel</label>
+                    {{ form.channel }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-600">Status</label>
+                    {{ form.status }}
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label fw-600">Description</label>
+                    {{ form.description }}
+                </div>
+            </div>
+
+            <!-- Credentials -->
+            <div class="section-label">API Credentials</div>
+            <p class="credential-note mb-3">
+                🔒 Credentials are stored securely. Get these from your seller dashboard.
+            </p>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-600">API Key</label>
+                    {{ form.api_key }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-600">API Secret</label>
+                    {{ form.api_secret }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-600">Access Token</label>
+                    {{ form.access_token }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-600">Refresh Token</label>
+                    {{ form.refresh_token }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-600">Seller / Store ID</label>
+                    {{ form.store_id }}
+                </div>
+            </div>
+
+            <!-- Sync Settings -->
+            <div class="section-label">Sync Settings</div>
+            <div class="toggle-row">
+                <label>Auto-sync products when added</label>
+                {{ form.auto_sync }}
+            </div>
+            <div class="toggle-row">
+                <label>Sync inventory / stock levels</label>
+                {{ form.sync_inventory }}
+            </div>
+            <div class="toggle-row">
+                <label>Sync prices</label>
+                {{ form.sync_prices }}
+            </div>
+            <div class="row g-3 mt-1">
+                <div class="col-md-4">
+                    <label class="form-label fw-600">Price Markup (%)</label>
+                    {{ form.markup_percent }}
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-submit">
+                💾 Save Channel
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

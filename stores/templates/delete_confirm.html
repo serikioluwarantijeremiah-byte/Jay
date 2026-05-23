@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="py-4" style="text-align:center; color:white;">
+    <h3>Remove "{{ store.name }}"?</h3>
+    <p style="color:rgba(255,255,255,0.6);">
+        This will disconnect the channel. Your products won't be deleted.
+    </p>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger me-2">Yes, Remove</button>
+        <a href="{% url 'stores:list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

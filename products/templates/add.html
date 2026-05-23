@@ -1,0 +1,199 @@
+{% load static %}
+{% extends 'base.html' %}
+
+{% block styles %}
+<style>
+    body {
+        background: linear-gradient(to bottom, #7b2ff7 0%, #2c003e 100%);
+        min-height: 100vh;
+    }
+
+    .form-card {
+        background: rgba(255,255,255,0.97);
+        border-radius: 24px;
+        padding: 36px;
+        box-shadow: 0 16px 50px rgba(0,0,0,0.2);
+        margin: 2rem auto;
+        max-width: 800px;
+    }
+
+    .form-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #7b2ff7, #00c6ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-label {
+        font-weight: 700;
+        color: #7b2ff7;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 1.5rem 0 0.8rem;
+        border-bottom: 2px solid #f0e6ff;
+        padding-bottom: 6px;
+    }
+
+    .channel-toggle {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        background: #f8f4ff;
+        border: 1px solid #e0d0ff;
+        margin-bottom: 10px;
+    }
+
+    .channel-toggle label {
+        font-weight: 600;
+        color: #3a3a5c;
+        margin: 0;
+        flex: 1;
+    }
+
+    .channel-toggle .badge {
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        border-radius: 20px;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        border-radius: 30px;
+        background: linear-gradient(135deg, #7b2ff7, #4facfe);
+        color: white;
+        border: none;
+        font-size: 1rem;
+        font-weight: 700;
+        margin-top: 1.5rem;
+        transition: 0.3s;
+    }
+
+    .btn-submit:hover {
+        opacity: 0.88;
+        transform: scale(1.01);
+    }
+
+    .gallery-slot {
+        background: #f8f4ff;
+        border-radius: 12px;
+        padding: 14px;
+        border: 1px dashed #c9a0ff;
+        margin-bottom: 10px;
+    }
+
+    .back-link {
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+
+    .back-link:hover { color: #c9b0ff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="py-4">
+    <a href="{% url 'products:list' %}" class="back-link">← Back to Products</a>
+
+    <div class="form-card">
+        <div class="form-title">Add New Product</div>
+
+        {% if messages %}
+            {% for msg in messages %}
+                <div class="alert alert-{{ msg.tags }} alert-dismissible fade show" role="alert">
+                    {{ msg }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Basic Info -->
+            <div class="section-label">Basic Info</div>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label fw-600">Product Name</label>
+                    {{ form.name }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-600">Category</label>
+                    {{ form.category }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-600">Description</label>
+                    {{ form.description }}
+                </div>
+            </div>
+
+            <!-- Pricing & Stock -->
+            <div class="section-label">Pricing & Stock</div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-600">Price (£)</label>
+                    {{ form.price }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-600">Stock Quantity</label>
+                    {{ form.stock }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-600">SKU</label>
+                    {{ form.sku }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-600">Status</label>
+                    {{ form.status }}
+                </div>
+            </div>
+
+            <!-- Main Image -->
+            <div class="section-label">Main Image</div>
+            {{ form.image }}
+
+            <!-- Gallery Images -->
+            <div class="section-label">Gallery Images</div>
+            {{ formset.management_form }}
+            {% for image_form in formset %}
+                <div class="gallery-slot">
+                    <div class="row g-2">
+                        <div class="col-md-8">{{ image_form.image }}</div>
+                        <div class="col-md-4">{{ image_form.alt }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Channel Sync -->
+            <div class="section-label">Auto-publish to Channels</div>
+            <div class="channel-toggle">
+                {{ form.sync_amazon }}
+                <label>Amazon</label>
+                <span class="badge bg-warning text-dark">SP-API</span>
+            </div>
+            <div class="channel-toggle">
+                {{ form.sync_ebay }}
+                <label>eBay</label>
+                <span class="badge bg-danger">Trading API</span>
+            </div>
+            <div class="channel-toggle">
+                {{ form.sync_etsy }}
+                <label>Etsy</label>
+                <span class="badge bg-success">Open API</span>
+            </div>
+
+            <button type="submit" class="btn btn-submit">
+                🚀 Add Product & Sync Channels
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
